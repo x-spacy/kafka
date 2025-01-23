@@ -61,7 +61,7 @@ jobs:
       # Install @nestjs/cli globally
       #
       - name: Install @nestjs/cli globally
-        run: pnpm global add @nestjs/cli
+        run: npm i -g @nestjs/cli
 
       #
       # Build source
