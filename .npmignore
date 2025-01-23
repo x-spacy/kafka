@@ -1,0 +1,13 @@
+.github/
+
+node_modules/
+src/
+
+.editorconfig
+.gitignore
+
+eslint.config.mjs
+
+pnpm-lock.yaml
+
+tsconfig.json
