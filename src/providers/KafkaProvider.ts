@@ -12,17 +12,21 @@ import {
   Message
 } from '@confluentinc/kafka-javascript';
 
+import { KafkaMessage } from '@x-spacy/kafka/models/KafkaMessage';
+
 @Injectable()
 export class KafkaProvider {
   private readonly discoveryService: DiscoveryService;
+
   private readonly reflector: Reflector;
 
   private readonly kafkaConsumer: KafkaConsumer;
+
   private readonly kafkaProducer: KafkaProducer;
 
   private readonly topicListeners: Map<string, InstanceWrapper<Function | Type<unknown>>> = new Map();
 
-  private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer, partition: number | null | undefined }>();
+  private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
 
   constructor(host: string, port: number, username: string, password: string, groupId: string) {
     this.kafkaConsumer = new KafkaConsumer({
@@ -106,6 +110,12 @@ export class KafkaProvider {
       if (!method) {
         return;
       }
+
+      const kafkaMessage = message as KafkaMessage;
+
+      kafkaMessage.ack = () => {
+        this.kafkaConsumer.commitMessageSync(message);
+      };
 
       method.call(messageListener, message);
     });

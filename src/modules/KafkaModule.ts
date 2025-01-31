@@ -10,11 +10,11 @@ import { KafkaProvider } from '@x-spacy/kafka/providers/KafkaProvider';
 
 export class KafkaModule {
   public static forRoot(config: {
-    host: string,
-    port: number,
-    username: string,
-    password: string,
-    groupId: string
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    groupId: string;
   }): DynamicModule {
     return {
       global: true,
