@@ -107,7 +107,7 @@ export class KafkaProvider {
         return;
       }
 
-      method.call(messageListener, message.value as Buffer);
+      method.call(messageListener, message);
     });
   }
 
