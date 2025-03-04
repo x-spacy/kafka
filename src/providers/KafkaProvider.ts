@@ -29,7 +29,7 @@ export class KafkaProvider implements OnModuleInit {
 
   private readonly AWAITING_SUBSCRIPTIONS = new Array<string>();
 
-  private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
+  private readonly AWAITING_PUBLISH_MESSAGES = new Array<{ topic: string; buffer: Buffer; partition: number | null | undefined }>();
 
   constructor(
     host: string,
@@ -70,18 +70,17 @@ export class KafkaProvider implements OnModuleInit {
       'security.protocol': securityProtocol,
       'sasl.mechanisms': mechanism,
       'sasl.username': username,
-      'sasl.password': password
+      'sasl.password': password,
+      'linger.ms': 0
     }).connect();
 
     this.kafkaProducer.on('ready', () => {
-      if (this.AWAITING_PUBLISH_MESSAGES.size <= 0) {
+      if (!this.AWAITING_PUBLISH_MESSAGES.length) {
         return;
       }
 
-      for (const [ topic, message ] of this.AWAITING_PUBLISH_MESSAGES) {
-        const { buffer, partition } = message;
-
-        this.kafkaProducer.produce(topic, partition, buffer);
+      for (const { topic, buffer, partition } of this.AWAITING_PUBLISH_MESSAGES) {
+        this.kafkaProducer.produce(topic, partition, buffer, Buffer.alloc(0));
       }
     });
 
@@ -140,11 +139,11 @@ export class KafkaProvider implements OnModuleInit {
     this.kafkaConsumer.subscribe(topics);
   }
 
-  public async publish(topic: string, buffer: Buffer, partition?: number | null | undefined) {
+  public async publish(topic: string, buffer: Buffer, partition: number | null | undefined = -1) {
     if (!this.kafkaProducer.isConnected()) {
-      return this.AWAITING_PUBLISH_MESSAGES.set(topic, { buffer, partition });
+      return this.AWAITING_PUBLISH_MESSAGES.push({ topic, buffer, partition });
     }
 
-    this.kafkaProducer.produce(topic, partition, buffer);
+    this.kafkaProducer.produce(topic, partition, buffer, Buffer.alloc(0));
   }
 }
