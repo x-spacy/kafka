@@ -1,6 +1,7 @@
 import {
   Injectable,
   Logger,
+  OnModuleInit,
   Type
 } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
@@ -15,7 +16,7 @@ import {
 import { KafkaMessage } from '@x-spacy/kafka/models/KafkaMessage';
 
 @Injectable()
-export class KafkaProvider {
+export class KafkaProvider implements OnModuleInit {
   private readonly discoveryService: DiscoveryService;
 
   private readonly reflector: Reflector;
@@ -89,23 +90,7 @@ export class KafkaProvider {
     });
   }
 
-  public async subscribe(...topics: string[]): Promise<void> {
-    if (!this.kafkaConsumer.isConnected()) {
-      for (let index = 0; index < topics.length; index++) {
-        const topicName = topics[index];
-
-        if (this.AWAITING_SUBSCRIPTIONS.includes(topicName)) {
-          continue;
-        }
-
-        this.AWAITING_SUBSCRIPTIONS.push(topicName);
-      }
-
-      return;
-    }
-
-    this.kafkaConsumer.subscribe(topics);
-
+  public async onModuleInit(): Promise<void> {
     this.discoveryService.getProviders().forEach((provider: InstanceWrapper<Type<unknown> | Function>) => {
       const instance = !provider.metatype || provider.inject ? provider.instance?.constructor : provider.metatype;
 
@@ -114,10 +99,6 @@ export class KafkaProvider {
       }
 
       const topicName = this.reflector.get('x-spacy:on_message_event_metadata', instance);
-
-      if (!topics.includes(topicName)) {
-        return;
-      }
 
       this.topicListeners.set(topicName, provider);
     });
@@ -151,11 +132,17 @@ export class KafkaProvider {
     });
   }
 
-  public async publish(topic: string, buffer: Buffer, partition?: number | null | undefined): Promise<void> {
-    if (!this.kafkaProducer.isConnected()) {
-      this.AWAITING_PUBLISH_MESSAGES.set(topic, { buffer, partition });
+  public async subscribe(...topics: string[]) {
+    if (!this.kafkaConsumer.isConnected()) {
+      return this.AWAITING_SUBSCRIPTIONS.push(...topics);
+    }
 
-      return;
+    this.kafkaConsumer.subscribe(topics);
+  }
+
+  public async publish(topic: string, buffer: Buffer, partition?: number | null | undefined) {
+    if (!this.kafkaProducer.isConnected()) {
+      return this.AWAITING_PUBLISH_MESSAGES.set(topic, { buffer, partition });
     }
 
     this.kafkaProducer.produce(topic, partition, buffer);
