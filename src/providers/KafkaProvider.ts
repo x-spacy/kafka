@@ -51,7 +51,11 @@ export class KafkaProvider {
     }).connect();
 
     this.kafkaConsumer.on('ready', () => {
-      this.kafkaConsumer.subscribe(this.AWAITING_SUBSCRIPTIONS);
+      for (let index = 0; index < this.AWAITING_SUBSCRIPTIONS.length; index++) {
+        const topicName = this.AWAITING_SUBSCRIPTIONS[index];
+
+        this.kafkaConsumer.subscribe([ topicName ]);
+      }
 
       this.kafkaConsumer.consume();
     });
