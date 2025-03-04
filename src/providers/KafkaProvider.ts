@@ -38,8 +38,8 @@ export class KafkaProvider {
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined,
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER',
     groupId: string,
-    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined,
-    enableAutoCommit: boolean
+    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined = 'earliest',
+    enableAutoCommit: boolean = false
   ) {
     this.kafkaConsumer = new KafkaConsumer({
       'bootstrap.servers': `${host}:${port}`,

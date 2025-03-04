@@ -14,11 +14,11 @@ export class KafkaModule {
     port: number;
     username: string;
     password: string;
-    securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined;
+    securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl';
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER';
     groupId: string;
-    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined;
-    enableAutoCommit: boolean;
+    offsetReset?: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error';
+    enableAutoCommit?: boolean;
   }): DynamicModule {
     return {
       global: true,
