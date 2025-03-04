@@ -113,3 +113,5 @@ bin/
 
 # MacOS files
 .DS_Store
+
+main.ts
