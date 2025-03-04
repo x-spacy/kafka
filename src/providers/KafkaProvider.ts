@@ -40,9 +40,9 @@ export class KafkaProvider {
       'enable.auto.commit': false
     }).connect();
 
-    this.kafkaConsumer.on('ready', () => {
+    setTimeout(() => {
       this.kafkaConsumer.consume();
-    });
+    }, 1000);
 
     this.kafkaConsumer.on('event.error', (error) => {
       Logger.error(error, KafkaProvider.name);
