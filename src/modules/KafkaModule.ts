@@ -14,6 +14,8 @@ export class KafkaModule {
     port: number;
     username: string;
     password: string;
+    securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined;
+    mechanism: string;
     groupId: string;
   }): DynamicModule {
     return {
@@ -24,7 +26,7 @@ export class KafkaModule {
         {
           provide: 'KafkaProvider',
           useFactory: () => {
-            return new KafkaProvider(config.host, config.port, config.username, config.password, config.groupId);
+            return new KafkaProvider(config.host, config.port, config.username, config.password, config.securityProtocol, config.mechanism, config.groupId);
           },
           inject: []
         }

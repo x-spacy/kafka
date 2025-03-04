@@ -28,11 +28,11 @@ export class KafkaProvider {
 
   private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
 
-  constructor(host: string, port: number, username: string, password: string, groupId: string) {
+  constructor(host: string, port: number, username: string, password: string, securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined, mechanism: string, groupId: string) {
     this.kafkaConsumer = new KafkaConsumer({
       'bootstrap.servers': `${host}:${port}`,
-      'security.protocol': 'sasl_plaintext',
-      'sasl.mechanisms': 'PLAIN',
+      'security.protocol': securityProtocol,
+      'sasl.mechanisms': mechanism,
       'sasl.username': username,
       'sasl.password': password,
       'group.id': groupId,
@@ -50,8 +50,8 @@ export class KafkaProvider {
 
     this.kafkaProducer = new KafkaProducer({
       'bootstrap.servers': `${host}:${port}`,
-      'security.protocol': 'sasl_plaintext',
-      'sasl.mechanisms': 'PLAIN',
+      'security.protocol': securityProtocol,
+      'sasl.mechanisms': mechanism,
       'sasl.username': username,
       'sasl.password': password
     }).connect();
