@@ -5,7 +5,7 @@ declare module '@x-spacy/kafka' {
     username: string;
     password: string;
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined;
-    mechanism: string;
+    mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER';
     groupId: string;
   }
   export class KafkaModule {

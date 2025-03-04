@@ -28,7 +28,15 @@ export class KafkaProvider {
 
   private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
 
-  constructor(host: string, port: number, username: string, password: string, securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined, mechanism: string, groupId: string) {
+  constructor(
+    host: string,
+    port: number,
+    username: string,
+    password: string,
+    securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined,
+    mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER',
+    groupId: string
+  ) {
     this.kafkaConsumer = new KafkaConsumer({
       'bootstrap.servers': `${host}:${port}`,
       'security.protocol': securityProtocol,
@@ -37,12 +45,13 @@ export class KafkaProvider {
       'sasl.password': password,
       'group.id': groupId,
       'auto.offset.reset': 'earliest',
-      'enable.auto.commit': false
+      'enable.auto.commit': false,
+      'client.id': 'ccloud-nodejs-client-d5b20770-ae0c-4e43-be34-21e62cb85fb1'
     }).connect();
 
-    setTimeout(() => {
+    this.kafkaConsumer.on('ready', () => {
       this.kafkaConsumer.consume();
-    }, 1000);
+    });
 
     this.kafkaConsumer.on('event.error', (error) => {
       Logger.error(error, KafkaProvider.name);
