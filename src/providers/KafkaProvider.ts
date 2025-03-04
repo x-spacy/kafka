@@ -26,7 +26,7 @@ export class KafkaProvider {
 
   private readonly topicListeners: Map<string, InstanceWrapper<Function | Type<unknown>>> = new Map();
 
-  private readonly AWAITING_SUBSCRIPTIONS = new Set<string>();
+  private readonly AWAITING_SUBSCRIPTIONS = new Array<string>();
 
   private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
 
@@ -53,15 +53,7 @@ export class KafkaProvider {
     }).connect();
 
     this.kafkaConsumer.on('ready', () => {
-      do {
-        const { value: topicName } = this.AWAITING_SUBSCRIPTIONS.values().next();
-
-        if (!topicName) {
-          break;
-        }
-
-        this.kafkaConsumer.subscribe([ topicName ]);
-      } while (this.AWAITING_SUBSCRIPTIONS.size > 0);
+      this.kafkaConsumer.subscribe(this.AWAITING_SUBSCRIPTIONS);
 
       this.kafkaConsumer.consume();
     });
@@ -100,11 +92,11 @@ export class KafkaProvider {
       for (let index = 0; index < topics.length; index++) {
         const topicName = topics[index];
 
-        if (this.AWAITING_SUBSCRIPTIONS.has(topicName)) {
+        if (this.AWAITING_SUBSCRIPTIONS.includes(topicName)) {
           continue;
         }
 
-        this.AWAITING_SUBSCRIPTIONS.add(topicName);
+        this.AWAITING_SUBSCRIPTIONS.push(topicName);
       }
 
       return;
