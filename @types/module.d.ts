@@ -7,6 +7,8 @@ declare module '@x-spacy/kafka' {
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined;
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER';
     groupId: string;
+    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined;
+    enableAutoCommit: boolean;
   }
   export class KafkaModule {
     public static forRoot(config: KafkaServerProperties): DynamicModule;

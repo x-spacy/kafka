@@ -26,6 +26,8 @@ export class KafkaProvider {
 
   private readonly topicListeners: Map<string, InstanceWrapper<Function | Type<unknown>>> = new Map();
 
+  private readonly AWAITING_SUBSCRIPTIONS = new Set<string>();
+
   private readonly AWAITING_PUBLISH_MESSAGES = new Map<string, { buffer: Buffer; partition: number | null | undefined }>();
 
   constructor(
@@ -35,7 +37,9 @@ export class KafkaProvider {
     password: string,
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined,
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER',
-    groupId: string
+    groupId: string,
+    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined,
+    enableAutoCommit: boolean
   ) {
     this.kafkaConsumer = new KafkaConsumer({
       'bootstrap.servers': `${host}:${port}`,
@@ -44,12 +48,21 @@ export class KafkaProvider {
       'sasl.username': username,
       'sasl.password': password,
       'group.id': groupId,
-      'auto.offset.reset': 'earliest',
-      'enable.auto.commit': false,
-      'client.id': 'ccloud-nodejs-client-d5b20770-ae0c-4e43-be34-21e62cb85fb1'
+      'auto.offset.reset': offsetReset,
+      'enable.auto.commit': enableAutoCommit
     }).connect();
 
     this.kafkaConsumer.on('ready', () => {
+      do {
+        const { value: topicName } = this.AWAITING_SUBSCRIPTIONS.values().next();
+
+        if (!topicName) {
+          break;
+        }
+
+        this.kafkaConsumer.subscribe([ topicName ]);
+      } while (this.AWAITING_SUBSCRIPTIONS.size > 0);
+
       this.kafkaConsumer.consume();
     });
 
@@ -83,6 +96,20 @@ export class KafkaProvider {
   }
 
   public async subscribe(...topics: string[]): Promise<void> {
+    if (!this.kafkaConsumer.isConnected()) {
+      for (let index = 0; index < topics.length; index++) {
+        const topicName = topics[index];
+
+        if (this.AWAITING_SUBSCRIPTIONS.has(topicName)) {
+          continue;
+        }
+
+        this.AWAITING_SUBSCRIPTIONS.add(topicName);
+      }
+
+      return;
+    }
+
     this.kafkaConsumer.subscribe(topics);
 
     this.discoveryService.getProviders().forEach((provider: InstanceWrapper<Type<unknown> | Function>) => {
