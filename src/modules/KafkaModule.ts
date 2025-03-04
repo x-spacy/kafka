@@ -17,8 +17,6 @@ export class KafkaModule {
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl';
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER';
     groupId: string;
-    offsetReset?: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error';
-    enableAutoCommit?: boolean;
   }): DynamicModule {
     return {
       global: true,
@@ -28,7 +26,7 @@ export class KafkaModule {
         {
           provide: 'KafkaProvider',
           useFactory: () => {
-            return new KafkaProvider(config.host, config.port, config.username, config.password, config.securityProtocol, config.mechanism, config.groupId, config.offsetReset, config.enableAutoCommit);
+            return new KafkaProvider(config.host, config.port, config.username, config.password, config.securityProtocol, config.mechanism, config.groupId);
           },
           inject: []
         }

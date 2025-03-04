@@ -37,9 +37,7 @@ export class KafkaProvider {
     password: string,
     securityProtocol: 'plaintext' | 'ssl' | 'sasl_plaintext' | 'sasl_ssl' | undefined,
     mechanism: 'GSSAPI' | 'PLAIN' | 'SCRAM-SHA-256' | 'SCRAM-SHA-512' | 'OAUTHBEARER',
-    groupId: string,
-    offsetReset: 'earliest' | 'latest' | 'smallest' | 'beginning' | 'largest' | 'end' | 'error' | undefined = 'earliest',
-    enableAutoCommit: boolean = false
+    groupId: string
   ) {
     this.kafkaConsumer = new KafkaConsumer({
       'bootstrap.servers': `${host}:${port}`,
@@ -48,8 +46,8 @@ export class KafkaProvider {
       'sasl.username': username,
       'sasl.password': password,
       'group.id': groupId,
-      'auto.offset.reset': offsetReset,
-      'enable.auto.commit': enableAutoCommit
+      'auto.offset.reset': 'earliest',
+      'enable.auto.commit': false
     }).connect();
 
     this.kafkaConsumer.on('ready', () => {
